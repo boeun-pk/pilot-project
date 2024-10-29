@@ -11,17 +11,16 @@
 
 ## 프로젝트 목록
 
+
 ### 1. 유동인구 카운트 YOLO 영상 파일럿 프로젝트
 - **프로젝트 설명**: YOLO 모델을 사용하여 영상 속 유동인구를 실시간으로 감지하고, 입장 및 퇴장 수를 카운트하는 시스템.
 - **주요 기능**: 사람 객체 탐지, 입장 및 퇴장 카운팅, 누적 인원 계산.
 - **관련 링크**:
   - [YOLO 모델 다운로드](https://github.com/ultralytics/yolov5)
   - [OpenCV 공식 문서](https://docs.opencv.org/)
-- **주피터 노트북**
-  - [구글 코렙](https://colab.research.google.com/drive/1gc3qp07owQsf6pCEeuXN9EbkSoPf5a7a#scrollTo=4nqCIc89Ux3S)
 - **시연 영상**:  
   ![유동인구 카운트 영상](https://github.com/boeun-pk/project/blame/main/output3_with_counts.mp4)
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/ddbe9565-998c-4b4a-b82a-e829cd8f446e/1736f2b2-21bc-4679-a0c0-780ca38e3393/image.png)
+![image.png](https://github.com/boeun-pk/project/blob/yolo/image.png)
 
 ---
 
