@@ -32,7 +32,7 @@
   - [구글 코렙](https://colab.research.google.com/drive/1xvnvfAQW9-nAEECK2f63nsFob7Zw9YcE?hl=ko)
   - [YOLO 모델 다운로드](https://github.com/ultralytics/yolov5)
 - **시연 영상**:  
-  ![폐결절 탐지 사진]()
+  ![폐결절 탐지 사진](https://github.com/boeun-pk/project/blob/yolo/%ED%8F%90%EA%B2%B0%EC%A0%88%ED%83%90%EC%A7%80.png)
 
 
 --- 
