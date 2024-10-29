@@ -18,6 +18,9 @@
 - **관련 링크**:
   - [YOLO 모델 다운로드](https://github.com/ultralytics/yolov5)
   - [OpenCV 공식 문서](https://docs.opencv.org/)
+
+- **주피터 노트북 코드**
+- [구글 코렙](https://colab.research.google.com/drive/1gUCAYWWbg67DZaGdWa-_usnta1r9yziR#scrollTo=Kh0eiJKWA321)
 - **시연 영상**:  
   ![유동인구 카운트 영상](https://github.com/boeun-pk/project/blame/main/output3_with_counts.mp4)
 ![image.png](https://github.com/boeun-pk/project/blob/yolo/image.png)
