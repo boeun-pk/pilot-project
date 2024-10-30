@@ -19,7 +19,7 @@
   - [구글 코렙](https://colab.research.google.com/drive/1gUCAYWWbg67DZaGdWa-_usnta1r9yziR#scrollTo=Kh0eiJKWA321)
 - **시연 영상**:  
   - ![유동인구 카운트 영상](https://github.com/boeun-pk/project/blame/main/output3_with_counts.mp4)
-  - ![image.png](https://github.com/boeun-pk/project/blob/main/image.png)
+  - ![image.png](https://github.com/boeun-pk/pilot-project/blob/main/yolo/count/image.png)
 
 ---
 
