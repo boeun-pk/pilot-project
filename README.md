@@ -1,8 +1,6 @@
 # project
 
 
-# 프로젝트 목록 
-
 # 포트폴리오 프로젝트 모음
 
 이 저장소에는 다양한 YOLO 신경망 활용 파일럿 프로젝트가 포함되어 있습니다. 각 프로젝트는 실시간 객체 탐지, 추적, 분석 등을 목표로 합니다.
@@ -20,22 +18,21 @@
   - [OpenCV 공식 문서](https://docs.opencv.org/)
 
 - **주피터 노트북 코드**
-- [구글 코렙](https://colab.research.google.com/drive/1gUCAYWWbg67DZaGdWa-_usnta1r9yziR#scrollTo=Kh0eiJKWA321)
+  - [구글 코렙](https://colab.research.google.com/drive/1gUCAYWWbg67DZaGdWa-_usnta1r9yziR#scrollTo=Kh0eiJKWA321)
 - **시연 영상**:  
-  ![유동인구 카운트 영상](https://github.com/boeun-pk/project/blame/main/output3_with_counts.mp4)
-![image.png](https://github.com/boeun-pk/project/blob/yolo/image.png)
+  - ![유동인구 카운트 영상](https://github.com/boeun-pk/project/blame/main/output3_with_counts.mp4)
+  - ![image.png](https://github.com/boeun-pk/project/blob/main/image.png)
 
 ---
 
 ### 2. 엑스레이 사진에서 폐결절을 찾는 신경망
-- **프로젝트 설명**:  x-ray 사진을 분류해서 
+- **프로젝트 설명**:  x-ray 사진을 분류해서 폐 결절을 탐지하는 신경망 
 - **주요 기능**: 폐결절 자동 탐지 
 - **관련 링크**:
   - [구글 코렙](https://colab.research.google.com/drive/1xvnvfAQW9-nAEECK2f63nsFob7Zw9YcE?hl=ko)
   - [YOLO 모델 다운로드](https://github.com/ultralytics/yolov5)
 - **시연 영상**:  
-  ![폐결절 탐지 사진](https://github.com/boeun-pk/project/blob/yolo/%ED%8F%90%EA%B2%B0%EC%A0%88%ED%83%90%EC%A7%80.png)
-
+  - ![폐결절탐지](https://github.com/user-attachments/assets/e9c9ab96-5a19-4fc5-9d8b-a73f065f03d9)
 
 --- 
 
