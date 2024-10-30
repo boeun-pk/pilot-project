@@ -55,7 +55,7 @@ def get_response(user_input):
 st.title("통행 약자 인도 보행 안전 어시스턴트 서비스")
 
 # 이미지 표시
-st.image("cross\\cross_image.png", caption="Welcome to the Cross Chatbot", use_column_width=True)
+st.image("pilot-project/cross/cross_image.png", caption="Welcome to the Cross Chatbot", use_column_width=True)
 
 st.write("프로젝트에 대한 질문을 입력해주세요 예: 포트폴리오 주제가 뭔가요? ")
 
