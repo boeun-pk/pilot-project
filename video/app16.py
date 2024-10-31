@@ -90,7 +90,7 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
 
         # 약간의 지연을 추가하여 비디오 속도 제어
         # 비디오 속도 제어 - 값을 작게 설정하여 더 빠르게 재생
-        time.sleep(0.01)
+        time.sleep(0.00001)
 
 
     cap.release()
