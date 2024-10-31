@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import tempfile
 import cv2
 import numpy as np
+import os
 
 # 전체 레이아웃을 넓게 설정
 st.set_page_config(layout="wide")
@@ -48,7 +49,9 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
     # 임시 파일에 처리된 비디오 저장
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as output_video:
         output_path = output_video.name
-        out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+        # fourcc 인코딩 방식 설정
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -75,6 +78,11 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
         cap.release()
         out.release()
 
-    # 임시 파일에서 비디오 재생
-    result_placeholder.video(output_path)
+    # 비디오를 메모리에서 직접 스트리밍
+    with open(output_path, 'rb') as f:
+        video_bytes = f.read()
+        result_placeholder.video(video_bytes)
+
+    # 생성된 비디오 파일 삭제 (원하는 경우)
+    os.remove(output_path)
     st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
