@@ -3,8 +3,6 @@ from ultralytics import YOLO
 import tempfile
 import cv2
 import numpy as np
-from io import BytesIO
-import av  # PyAV 패키지를 사용하여 처리된 비디오를 읽기
 
 # 전체 레이아웃을 넓게 설정
 st.set_page_config(layout="wide")
@@ -47,15 +45,10 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # 메모리에 비디오 저장하기 위한 BytesIO 객체 생성
-    output_video = BytesIO()
-
-    # PyAV로 비디오 생성 (cv2.VideoWriter 대체)
-    with av.open(output_video, mode='w', format='mp4') as output_container:
-        stream = output_container.add_stream("h264", rate=fps)
-        stream.width = width
-        stream.height = height
-        stream.pix_fmt = "yuv420p"
+    # 임시 파일에 처리된 비디오 저장
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as output_video:
+        output_path = output_video.name
+        out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -77,17 +70,11 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            # 프레임을 PyAV로 비디오 스트림에 추가
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_pil = av.VideoFrame.from_ndarray(frame_rgb, format="rgb24")
-            for packet in stream.encode(frame_pil):
-                output_container.mux(packet)
+            out.write(frame)
 
-        # 스트림이 끝난 후 인코딩 마무리
-        for packet in stream.encode(None):
-            output_container.mux(packet)
+        cap.release()
+        out.release()
 
-    # 메모리에서 비디오 스트리밍
-    output_video.seek(0)
-    result_placeholder.video(output_video)
+    # 임시 파일에서 비디오 재생
+    result_placeholder.video(output_path)
     st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
