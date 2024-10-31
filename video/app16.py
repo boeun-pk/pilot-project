@@ -2,7 +2,8 @@ import streamlit as st
 from ultralytics import YOLO
 import tempfile
 import cv2
-import os
+import numpy as np
+from io import BytesIO
 
 # 전체 레이아웃을 넓게 설정
 st.set_page_config(layout="wide")
@@ -36,44 +37,40 @@ with st.container():
     with col2:
         st.header("사물 검출 결과 영상")
         result_placeholder = st.empty()
-        if "processed_video" in st.session_state and st.session_state["processed_video"] is not None:
-            result_placeholder.video(st.session_state["processed_video"])
-        else:
-            result_placeholder.markdown(
-                """
-                <div style='width:100%; height:620px; background-color:#d3d3d3; display:flex; align-items:center; justify-content:center; border-radius:5px;'>
-                    <p style='color:#888;'>여기에 사물 검출 결과가 표시됩니다.</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+
+        # 검출 결과가 표시될 빈 화면
+        result_placeholder.markdown(
+            """
+            <div style='width:100%; height:620px; background-color:#d3d3d3; display:flex; align-items:center; justify-content:center; border-radius:5px;'>
+                <p style='color:#888;'>여기에 사물 검출 결과가 표시됩니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 # 사물 검출 버튼 클릭 이벤트 처리
 if st.button("사물 검출 실행") and uploaded_file and model_file:
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_output:
-        output_path = temp_output.name
-
-    with tempfile.NamedTemporaryFile(delete=False) as temp_input:
-        temp_input.write(uploaded_file.read())
-        temp_input_path = temp_input.name
-
-    # 비디오 읽기 및 저장 설정
-    cap = cv2.VideoCapture(temp_input_path)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    # 비디오 처리
+    cap = cv2.VideoCapture(uploaded_file.name)
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    # 프레임별 사물 검출
+    # 메모리 내에서 비디오를 처리하고 저장
+    output_video = BytesIO()
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
 
+        # YOLO 모델로 예측 수행
         results = model(frame)
         detections = results[0].boxes if len(results) > 0 else []
 
+        # 검출 결과에 대한 바운딩 박스와 라벨 추가
         for box in detections:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             confidence = box.conf[0]
@@ -84,22 +81,13 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
+        # 메모리 내에서 비디오 프레임 작성
         out.write(frame)
 
     cap.release()
     out.release()
 
-    # 결과 비디오를 세션 상태에 저장하여 스트림릿에서 즉시 표시
-    st.session_state["processed_video"] = output_path
-    result_placeholder.video(output_path)
+    # 결과 비디오를 스트리밍 가능한 형태로 변환하여 스트림릿에 표시
+    output_video.seek(0)
+    result_placeholder.video(output_video)
     st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
-
-    # 다운로드 링크 제공
-    with open(output_path, "rb") as file:
-        st.download_button(
-            label="결과 영상 다운로드",
-            data=file,
-            file_name="detected_video.mp4",
-            mime="video/mp4"
-        )
-
