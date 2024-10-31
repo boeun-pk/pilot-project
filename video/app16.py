@@ -132,4 +132,4 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
             data=file,
             file_name="detected_video.avi",
             mime="video/avi"
-
+        )
