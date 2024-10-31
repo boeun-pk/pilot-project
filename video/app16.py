@@ -88,10 +88,6 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
         # 실시간 프레임을 Streamlit에 표시
         result_placeholder.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
-        # 약간의 지연을 추가하여 비디오 속도 제어
-        # 비디오 속도 제어 - 값을 작게 설정하여 더 빠르게 재생
-        fps = cap.get(cv2.CAP_PROP_FPS)  # 원본 비디오의 FPS 값을 가져옴
-        time.sleep(1 / fps)               # 각 프레임 사이에 원본 속도로 지연
 
 
 
