@@ -2,7 +2,7 @@ import streamlit as st
 from ultralytics import YOLO
 import tempfile
 import cv2
-import time
+import os
 
 # 전체 레이아웃을 넓게 설정
 st.set_page_config(layout="wide")
@@ -12,6 +12,8 @@ st.title("비디오 사물 검출 앱")
 
 # 모델 파일 업로드
 model_file = st.file_uploader("모델 파일을 업로드하세요", type=["pt"])
+model = None  # 모델 변수를 초기화
+
 if model_file:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pt") as temp_model_file:
         temp_model_file.write(model_file.read())
@@ -55,38 +57,51 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 실시간 프레임 표시
-if st.button("사물 검출 실행") and uploaded_file and model_file:
-    # 파일 읽기 설정
-    with tempfile.NamedTemporaryFile(delete=False) as temp_input:
-        temp_input.write(uploaded_file.read())
-        temp_input_path = temp_input.name
+# 사물 검출 버튼 클릭 이벤트 처리
+if st.button("사물 검출 실행") and uploaded_file and model:
+    # 비디오 처리
+    cap = cv2.VideoCapture(uploaded_file.name)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    cap = cv2.VideoCapture(temp_input_path)
-    result_placeholder = col2.empty()  # 검출 결과를 표시할 공간
+    # 임시 파일에 처리된 비디오 저장
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as output_video:
+        output_path = output_video.name
+        # fourcc 인코딩 방식 설정
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        # YOLO 모델로 예측 수행
-        results = model(frame)
-        detections = results[0].boxes if len(results) > 0 else []
+            # YOLO 모델로 예측 수행
+            results = model(frame)
+            detections = results[0].boxes if len(results) > 0 else []
 
-        # 검출된 객체 표시
-        for box in detections:
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            confidence = box.conf[0]
-            class_id = int(box.cls[0])
-            class_name = model.names[class_id]
-            label = f"{class_name} {confidence:.2f}"
+            # 검출 결과에 대한 바운딩 박스와 라벨 추가
+            for box in detections:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                confidence = box.conf[0]
+                class_id = int(box.cls[0])
+                class_name = model.names[class_id]
+                label = f"{class_name} {confidence:.2f}"
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        # 실시간 프레임을 Streamlit에 표시
-        result_placeholder.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            out.write(frame)
 
-    cap.release()
-    st.success("사물 검출이 완료되었습니다.")
+        cap.release()
+        out.release()
+
+    # 처리된 비디오를 메모리에서 직접 스트리밍
+    with open(output_path, 'rb') as f:
+        video_bytes = f.read()
+        st.video(video_bytes)
+
+    # 생성된 비디오 파일 삭제
+    os.remove(output_path)
+    st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
