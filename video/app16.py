@@ -4,6 +4,7 @@ import tempfile
 import cv2
 import numpy as np
 from io import BytesIO
+import av  # PyAV 패키지를 사용하여 처리된 비디오를 읽기
 
 # 전체 레이아웃을 넓게 설정
 st.set_page_config(layout="wide")
@@ -38,16 +39,6 @@ with st.container():
         st.header("사물 검출 결과 영상")
         result_placeholder = st.empty()
 
-        # 검출 결과가 표시될 빈 화면
-        result_placeholder.markdown(
-            """
-            <div style='width:100%; height:620px; background-color:#d3d3d3; display:flex; align-items:center; justify-content:center; border-radius:5px;'>
-                <p style='color:#888;'>여기에 사물 검출 결과가 표시됩니다.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
 # 사물 검출 버튼 클릭 이벤트 처리
 if st.button("사물 검출 실행") and uploaded_file and model_file:
     # 비디오 처리
@@ -56,38 +47,47 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # 메모리 내에서 비디오를 처리하고 저장
+    # 메모리에 비디오 저장하기 위한 BytesIO 객체 생성
     output_video = BytesIO()
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+    # PyAV로 비디오 생성 (cv2.VideoWriter 대체)
+    with av.open(output_video, mode='w', format='mp4') as output_container:
+        stream = output_container.add_stream("h264", rate=fps)
+        stream.width = width
+        stream.height = height
+        stream.pix_fmt = "yuv420p"
 
-        # YOLO 모델로 예측 수행
-        results = model(frame)
-        detections = results[0].boxes if len(results) > 0 else []
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        # 검출 결과에 대한 바운딩 박스와 라벨 추가
-        for box in detections:
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            confidence = box.conf[0]
-            class_id = int(box.cls[0])
-            class_name = model.names[class_id]
-            label = f"{class_name} {confidence:.2f}"
+            # YOLO 모델로 예측 수행
+            results = model(frame)
+            detections = results[0].boxes if len(results) > 0 else []
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # 검출 결과에 대한 바운딩 박스와 라벨 추가
+            for box in detections:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                confidence = box.conf[0]
+                class_id = int(box.cls[0])
+                class_name = model.names[class_id]
+                label = f"{class_name} {confidence:.2f}"
 
-        # 메모리 내에서 비디오 프레임 작성
-        out.write(frame)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-    cap.release()
-    out.release()
+            # 프레임을 PyAV로 비디오 스트림에 추가
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_pil = av.VideoFrame.from_ndarray(frame_rgb, format="rgb24")
+            for packet in stream.encode(frame_pil):
+                output_container.mux(packet)
 
-    # 결과 비디오를 스트리밍 가능한 형태로 변환하여 스트림릿에 표시
+        # 스트림이 끝난 후 인코딩 마무리
+        for packet in stream.encode(None):
+            output_container.mux(packet)
+
+    # 메모리에서 비디오 스트리밍
     output_video.seek(0)
     result_placeholder.video(output_video)
     st.success("사물 검출이 완료되어 오른쪽에 표시됩니다.")
