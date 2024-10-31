@@ -89,7 +89,9 @@ if st.button("사물 검출 실행") and uploaded_file and model_file:
         result_placeholder.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
         # 약간의 지연을 추가하여 비디오 속도 제어
-        time.sleep(1 / cap.get(cv2.CAP_PROP_FPS))
+        # 비디오 속도 제어 - 값을 작게 설정하여 더 빠르게 재생
+        time.sleep(0.01)
+
 
     cap.release()
     st.success("사물 검출이 완료되었습니다.")
